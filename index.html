@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ordena la Frase - Edición Escolar</title>
+    <style>
+        /* --- FUENTE ESCOLAR --- */
+        @font-face {
+            font-family: 'Escolar';
+            src: url('Escolar_N.TTF') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        :root {
+            --primary: #4A90E2;   /* Azul bonito */
+            --secondary: #F5A623; /* Naranja/Amarillo */
+            --success: #7ED321;   /* Verde */
+            --error: #D0021B;     /* Rojo */
+            --bg: #E0F7FA;        /* Cian muy claro */
+            --card-bg: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Escolar', 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- ZONA DEL PROFESOR (CONFIGURACIÓN) --- */
+        #teacher-zone {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: 2px dashed #ccc;
+            transition: opacity 0.3s;
+            /* Visible por defecto */
+            display: block; 
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 1.2rem;
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            font-family: inherit;
+        }
+
+        /* --- ZONA DE JUEGO --- */
+        #game-area {
+            width: 100%;
+            max-width: 1000px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+
+        /* Contenedor de la frase (Respuesta) */
+        .word-container {
+            min-height: 80px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        #target-area {
+            border-bottom: 4px solid var(--primary);
+            min-height: 120px;
+        }
+
+        /* Las fichas de palabras */
+        .word-card {
+            background-color: white;
+            padding: 15px 25px;
+            font-size: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 0 #ddd;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s, box-shadow 0.1s;
+            border: 2px solid var(--primary);
+            color: #333;
+        }
+
+        .word-card:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 #ddd;
+        }
+
+        /* Estados de respuesta */
+        .correct-border {
+            border-color: var(--success) !important;
+            background-color: #F0FFF4;
+        }
+        
+        .incorrect-border {
+            border-color: var(--error) !important;
+            animation: shake 0.5s;
+        }
+
+        /* --- BOTONERA --- */
+        #controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            font-family: inherit;
+            font-size: 1.2rem;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            color: white;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .btn-check { background-color: var(--success); }
+        .btn-reset { background-color: var(--secondary); }
+        .btn-new { background-color: var(--primary); }
+        .btn-full { background-color: #607D8B; }
+
+        /* Mensaje de Feedback */
+        #feedback {
+            font-size: 2rem;
+            height: 3rem;
+            font-weight: bold;
+            margin-top: 10px;
+            color: var(--primary);
+            text-shadow: 1px 1px 0px white;
+        }
+
+        /* Animación de error */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        /* --- MEDIA QUERIES PARA RESPONSIVE --- */
+        @media (max-width: 600px) {
+            .word-card { font-size: 1.5rem; padding: 10px 15px; }
+            .btn { font-size: 1rem; padding: 10px 15px; }
+            /* En móvil ocultamos la zona docente por defecto si quieres, 
+               pero la lógica de JS la manejará */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="teacher-zone">
+        <h3>✏️ Zona del Docente</h3>
+        <div class="input-group">
+            <input type="text" id="sentenceInput" placeholder="Escribe aquí la oración para ordenar..." value="El gato duerme en el sofá">
+            <button class="btn btn-new" onclick="initGame()">Generar Juego</button>
+        </div>
+        <small style="color: #666; margin-top: 5px; display:block;">Consejo: Usa mayúscula inicial y punto final para dar pistas a los más pequeños.</small>
+    </div>
+
+    <div id="game-area">
+        
+        <div style="width:100%; text-align:center; font-size: 1.2rem; color: #666;">Tu respuesta:</div>
+        <div id="target-area" class="word-container"></div>
+
+        <div id="feedback"></div>
+
+        <div style="width:100%; text-align:center; font-size: 1.2rem; color: #666;">Palabras disponibles:</div>
+        <div id="source-area" class="word-container"></div>
+
+    </div>
+
+    <div id="controls">
+        <button class="btn btn-check" onclick="checkAnswer()">✅ Comprobar</button>
+        <button class="btn btn-reset" onclick="resetWords()">🔄 Reiniciar</button>
+        <button class="btn btn-full" onclick="toggleFullScreen()">📺 Pantalla Completa</button>
+        <button id="toggle-btn" class="btn btn-new" onclick="toggleTeacherZone()" style="background-color: #9E9E9E;">⚙️ Ocultar</button>
+    </div>
+
+    <script>
+        // Variables de estado
+        let currentSentence = [];
+        let originalString = "";
+        
+        const sourceArea = document.getElementById('source-area');
+        const targetArea = document.getElementById('target-area');
+        const feedback = document.getElementById('feedback');
+        const inputField = document.getElementById('sentenceInput');
+        const teacherZone = document.getElementById('teacher-zone');
+        // Referencia al botón de mostrar/ocultar
+        const toggleBtn = document.getElementById('toggle-btn');
+
+        // Inicializar al cargar
+        window.onload = initGame;
+
+        function initGame() {
+            originalString = inputField.value.trim();
+            if(!originalString) return;
+
+            sourceArea.innerHTML = '';
+            targetArea.innerHTML = '';
+            feedback.textContent = '';
+            targetArea.className = 'word-container';
+
+            currentSentence = originalString.split(/\s+/);
+            let shuffled = [...currentSentence];
+            shuffleArray(shuffled);
+
+            shuffled.forEach((word) => {
+                createWordCard(word, sourceArea);
+            });
+        }
+
+        function createWordCard(text, parent) {
+            const card = document.createElement('div');
+            card.className = 'word-card';
+            card.textContent = text;
+            card.onclick = function() { moveCard(card); };
+            parent.appendChild(card);
+        }
+
+        function moveCard(card) {
+            feedback.textContent = '';
+            targetArea.classList.remove('incorrect-border', 'correct-border');
+
+            if (card.parentElement === sourceArea) {
+                targetArea.appendChild(card);
+            } else {
+                sourceArea.appendChild(card);
+            }
+        }
+
+        function checkAnswer() {
+            const userWords = Array.from(targetArea.children).map(card => card.textContent);
+            const userSentence = userWords.join(' ');
+
+            if (userSentence === originalString) {
+                targetArea.classList.add('correct-border');
+                feedback.style.color = 'var(--success)';
+                feedback.textContent = '¡Muy bien! 🎉';
+            } else {
+                targetArea.classList.add('incorrect-border');
+                feedback.style.color = 'var(--error)';
+                feedback.textContent = 'Inténtalo de nuevo...';
+                setTimeout(() => {
+                    targetArea.classList.remove('incorrect-border');
+                }, 500);
+            }
+        }
+
+        function resetWords() {
+            const cards = Array.from(targetArea.children);
+            cards.forEach(card => sourceArea.appendChild(card));
+            targetArea.classList.remove('correct-border', 'incorrect-border');
+            feedback.textContent = '';
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // LÓGICA MODIFICADA: Ahora cambia el texto del botón
+        function toggleTeacherZone() {
+            // Comprobamos si está oculto (none) o no
+            if(teacherZone.style.display === 'none') {
+                // Si estaba oculto, lo mostramos
+                teacherZone.style.display = 'block';
+                toggleBtn.innerHTML = '⚙️ Ocultar';
+            } else {
+                // Si estaba visible, lo ocultamos
+                teacherZone.style.display = 'none';
+                toggleBtn.innerHTML = '⚙️ Mostrar';
+            }
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch((e) => {
+                    console.log(e);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
