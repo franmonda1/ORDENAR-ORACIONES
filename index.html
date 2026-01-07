@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ordena la Frase - Edición Escolar</title>
+    <title>Juegos de Ordenar - Edición Escolar</title>
     <style>
         /* --- FUENTE ESCOLAR --- */
         @font-face {
@@ -14,12 +14,12 @@
         }
 
         :root {
-            --primary: #4A90E2;   /* Azul bonito */
-            --secondary: #F5A623; /* Naranja/Amarillo */
-            --success: #7ED321;   /* Verde */
-            --error: #D0021B;     /* Rojo */
-            --bg: #E0F7FA;        /* Cian muy claro */
-            --card-bg: #FFFFFF;
+            --primary: #4A90E2;
+            --secondary: #F5A623;
+            --success: #7ED321;
+            --error: #D0021B;
+            --bg: #E0F7FA;
+            --tab-inactive: #B0BEC5;
         }
 
         * {
@@ -39,7 +39,35 @@
             overflow-x: hidden;
         }
 
-        /* --- ZONA DEL PROFESOR (CONFIGURACIÓN) --- */
+        /* --- NAVEGACIÓN (TABS) --- */
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: rgba(255,255,255,0.5);
+            padding: 5px;
+            border-radius: 50px;
+        }
+
+        .tab-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 40px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            cursor: pointer;
+            background: transparent;
+            color: #555;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* --- ZONA DEL PROFESOR --- */
         #teacher-zone {
             width: 100%;
             max-width: 800px;
@@ -49,8 +77,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             margin-bottom: 20px;
             border: 2px dashed #ccc;
-            transition: opacity 0.3s;
-            /* Visible por defecto */
             display: block; 
         }
 
@@ -80,9 +106,8 @@
             gap: 30px;
         }
 
-        /* Contenedor de la frase (Respuesta) */
         .word-container {
-            min-height: 80px;
+            min-height: 100px;
             width: 100%;
             background-color: rgba(255, 255, 255, 0.6);
             border-radius: 20px;
@@ -98,14 +123,12 @@
 
         #target-area {
             border-bottom: 4px solid var(--primary);
-            min-height: 120px;
+            min-height: 130px;
         }
 
-        /* Las fichas de palabras */
-        .word-card {
+        /* Fichas generales */
+        .card {
             background-color: white;
-            padding: 15px 25px;
-            font-size: 2rem;
             border-radius: 15px;
             box-shadow: 0 5px 0 #ddd;
             cursor: pointer;
@@ -113,14 +136,30 @@
             transition: transform 0.1s, box-shadow 0.1s;
             border: 2px solid var(--primary);
             color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .word-card:active {
+        .card:active {
             transform: translateY(4px);
             box-shadow: 0 1px 0 #ddd;
         }
 
-        /* Estados de respuesta */
+        /* Estilo específico para palabras completas */
+        .mode-sentence .card {
+            padding: 10px 20px;
+            font-size: 1.8rem;
+        }
+
+        /* Estilo específico para letras individuales */
+        .mode-letters .card {
+            width: 60px;
+            height: 60px;
+            font-size: 2.5rem; /* Letra más grande */
+            padding: 0;
+        }
+
         .correct-border {
             border-color: var(--success) !important;
             background-color: #F0FFF4;
@@ -131,7 +170,6 @@
             animation: shake 0.5s;
         }
 
-        /* --- BOTONERA --- */
         #controls {
             display: flex;
             gap: 15px;
@@ -154,18 +192,13 @@
             align-items: center;
             gap: 8px;
         }
-
-        .btn:active {
-            transform: translateY(4px);
-            box-shadow: none;
-        }
+        .btn:active { transform: translateY(4px); box-shadow: none; }
 
         .btn-check { background-color: var(--success); }
         .btn-reset { background-color: var(--secondary); }
         .btn-new { background-color: var(--primary); }
         .btn-full { background-color: #607D8B; }
 
-        /* Mensaje de Feedback */
         #feedback {
             font-size: 2rem;
             height: 3rem;
@@ -175,52 +208,45 @@
             text-shadow: 1px 1px 0px white;
         }
 
-        /* Animación de error */
         @keyframes shake {
             0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
+            10%, 90% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20%, 80% { transform: translate(-3px, 0px) rotate(1deg); }
+            30%, 50%, 70% { transform: translate(3px, 2px) rotate(0deg); }
+            40%, 60% { transform: translate(1px, -1px) rotate(1deg); }
         }
 
-        /* --- MEDIA QUERIES PARA RESPONSIVE --- */
         @media (max-width: 600px) {
-            .word-card { font-size: 1.5rem; padding: 10px 15px; }
+            .mode-sentence .card { font-size: 1.4rem; padding: 8px 12px; }
+            .mode-letters .card { width: 50px; height: 50px; font-size: 2rem; }
             .btn { font-size: 1rem; padding: 10px 15px; }
-            /* En móvil ocultamos la zona docente por defecto si quieres, 
-               pero la lógica de JS la manejará */
         }
-
     </style>
 </head>
-<body>
+<body class="mode-sentence">
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchMode('sentence')" id="btn-mode-sentence">📝 Ordenar Frases</button>
+        <button class="tab-btn" onclick="switchMode('letters')" id="btn-mode-letters">🔤 Ordenar Letras</button>
+    </div>
 
     <div id="teacher-zone">
         <h3>✏️ Zona del Docente</h3>
         <div class="input-group">
-            <input type="text" id="sentenceInput" placeholder="Escribe aquí la oración para ordenar..." value="El gato duerme en el sofá">
+            <input type="text" id="sentenceInput" placeholder="Escribe aquí..." value="El gato duerme">
             <button class="btn btn-new" onclick="initGame()">Generar Juego</button>
         </div>
-        <small style="color: #666; margin-top: 5px; display:block;">Consejo: Usa mayúscula inicial y punto final para dar pistas a los más pequeños.</small>
+        <small id="helper-text" style="color: #666; margin-top: 5px; display:block;">Consejo: Escribe una oración con espacios.</small>
     </div>
 
     <div id="game-area">
-        
         <div style="width:100%; text-align:center; font-size: 1.2rem; color: #666;">Tu respuesta:</div>
         <div id="target-area" class="word-container"></div>
 
         <div id="feedback"></div>
 
-        <div style="width:100%; text-align:center; font-size: 1.2rem; color: #666;">Palabras disponibles:</div>
+        <div style="width:100%; text-align:center; font-size: 1.2rem; color: #666;">Fichas disponibles:</div>
         <div id="source-area" class="word-container"></div>
-
     </div>
 
     <div id="controls">
@@ -231,21 +257,49 @@
     </div>
 
     <script>
-        // Variables de estado
-        let currentSentence = [];
+        // ESTADO
+        let currentMode = 'sentence'; // 'sentence' o 'letters'
         let originalString = "";
         
+        // Elementos DOM
         const sourceArea = document.getElementById('source-area');
         const targetArea = document.getElementById('target-area');
         const feedback = document.getElementById('feedback');
         const inputField = document.getElementById('sentenceInput');
         const teacherZone = document.getElementById('teacher-zone');
-        // Referencia al botón de mostrar/ocultar
         const toggleBtn = document.getElementById('toggle-btn');
+        const helperText = document.getElementById('helper-text');
+        const body = document.body;
 
-        // Inicializar al cargar
+        // Inicializar
         window.onload = initGame;
 
+        // --- GESTIÓN DE MODOS ---
+        function switchMode(mode) {
+            currentMode = mode;
+            
+            // Actualizar estilos de botones
+            document.getElementById('btn-mode-sentence').classList.toggle('active', mode === 'sentence');
+            document.getElementById('btn-mode-letters').classList.toggle('active', mode === 'letters');
+            
+            // Actualizar clase del body para estilos CSS específicos
+            body.className = mode === 'sentence' ? 'mode-sentence' : 'mode-letters';
+
+            // Actualizar textos de ayuda y valores por defecto
+            if (mode === 'sentence') {
+                inputField.value = "La casa es roja";
+                inputField.placeholder = "Escribe una frase...";
+                helperText.textContent = "Consejo: Usa mayúsculas y puntos para dar pistas.";
+            } else {
+                inputField.value = "MARIPOSA";
+                inputField.placeholder = "Escribe una palabra...";
+                helperText.textContent = "Consejo: Escribe la palabra en MAYÚSCULAS para mayor claridad.";
+            }
+
+            initGame();
+        }
+
+        // --- LÓGICA DEL JUEGO ---
         function initGame() {
             originalString = inputField.value.trim();
             if(!originalString) return;
@@ -253,20 +307,32 @@
             sourceArea.innerHTML = '';
             targetArea.innerHTML = '';
             feedback.textContent = '';
-            targetArea.className = 'word-container';
+            targetArea.classList.remove('incorrect-border', 'correct-border');
 
-            currentSentence = originalString.split(/\s+/);
-            let shuffled = [...currentSentence];
+            // DIVIDIR: Depende del modo
+            let items = [];
+            if (currentMode === 'sentence') {
+                items = originalString.split(/\s+/); // Por espacios
+            } else {
+                items = originalString.split(''); // Por letras
+                // Si hay espacios en modo letras, los quitamos para no crear fichas vacías raras, 
+                // a menos que quieras que ordenen frases letra a letra (muy difícil).
+                items = items.filter(char => char.trim() !== ''); 
+            }
+
+            // Desordenar
+            let shuffled = [...items];
             shuffleArray(shuffled);
 
-            shuffled.forEach((word) => {
-                createWordCard(word, sourceArea);
+            // Crear fichas
+            shuffled.forEach((text) => {
+                createCard(text, sourceArea);
             });
         }
 
-        function createWordCard(text, parent) {
+        function createCard(text, parent) {
             const card = document.createElement('div');
-            card.className = 'word-card';
+            card.className = 'card';
             card.textContent = text;
             card.onclick = function() { moveCard(card); };
             parent.appendChild(card);
@@ -281,20 +347,35 @@
             } else {
                 sourceArea.appendChild(card);
             }
+            playTone('click');
         }
 
         function checkAnswer() {
-            const userWords = Array.from(targetArea.children).map(card => card.textContent);
-            const userSentence = userWords.join(' ');
+            const userItems = Array.from(targetArea.children).map(card => card.textContent);
+            let userResult = "";
+            let targetResult = "";
 
-            if (userSentence === originalString) {
+            if (currentMode === 'sentence') {
+                userResult = userItems.join(' ');
+                targetResult = originalString;
+            } else {
+                userResult = userItems.join('');
+                // En modo letras, comparamos sin espacios el original también
+                targetResult = originalString.replace(/\s+/g, '');
+            }
+
+            if (userResult === targetResult) {
+                // CORRECTO
                 targetArea.classList.add('correct-border');
                 feedback.style.color = 'var(--success)';
                 feedback.textContent = '¡Muy bien! 🎉';
+                playTone('win');
             } else {
+                // INCORRECTO
                 targetArea.classList.add('incorrect-border');
                 feedback.style.color = 'var(--error)';
                 feedback.textContent = 'Inténtalo de nuevo...';
+                playTone('lose');
                 setTimeout(() => {
                     targetArea.classList.remove('incorrect-border');
                 }, 500);
@@ -315,15 +396,12 @@
             }
         }
 
-        // LÓGICA MODIFICADA: Ahora cambia el texto del botón
+        // --- UI ---
         function toggleTeacherZone() {
-            // Comprobamos si está oculto (none) o no
             if(teacherZone.style.display === 'none') {
-                // Si estaba oculto, lo mostramos
                 teacherZone.style.display = 'block';
                 toggleBtn.innerHTML = '⚙️ Ocultar';
             } else {
-                // Si estaba visible, lo ocultamos
                 teacherZone.style.display = 'none';
                 toggleBtn.innerHTML = '⚙️ Mostrar';
             }
@@ -331,13 +409,53 @@
 
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch((e) => {
-                    console.log(e);
-                });
+                document.documentElement.requestFullscreen().catch(console.log);
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        // --- SISTEMA DE SONIDO (Web Audio API) ---
+        // Genera sonidos simples sin necesidad de archivos mp3 externos
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playTone(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            if (type === 'win') {
+                // Sonido de victoria (secuencia rápida aguda)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+
+            } else if (type === 'lose') {
+                // Sonido de error (grave y vibrante)
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+                
+            } else if (type === 'click') {
+                // Click suave
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
             }
         }
     </script>
